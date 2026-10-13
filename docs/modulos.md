@@ -72,7 +72,7 @@ archivo nuevo es importable sin tocar `package.json`.
 <!-- BEGIN generated:modules -->
 <!-- No edites aquí: lo reescribe `npm run docs`. -->
 
-Módulos de las carpetas publicadas (56), con la primera línea de su comentario de cabecera.
+Módulos de las carpetas publicadas (57), con la primera línea de su comentario de cabecera.
 
 | Archivo | Qué hace |
 | --- | --- |
@@ -126,6 +126,7 @@ Módulos de las carpetas publicadas (56), con la primera línea de su comentario
 | [`worker/access.ts`](../worker/access.ts) | La pregunta «¿es miembro de este workspace y tiene un derecho vivo para este producto?», en una sola consulta (2026-10-07). |
 | [`worker/api.ts`](../worker/api.ts) | El lado de la Developer Platform en un producto: rutas a las que llama una aplicación de terceros con un bearer token, en nombre de una persona. |
 | [`worker/cookies.ts`](../worker/cookies.ts) | Lectura de cookies, y nada más. |
+| [`worker/email-transport.test.ts`](../worker/email-transport.test.ts) | — |
 | [`worker/email.ts`](../worker/email.ts) | Email transaccional para las notificaciones de un producto. |
 | [`worker/jwt.ts`](../worker/jwt.ts) | Firma HS256 y verificación con audiencia, sobre Web Crypto. |
 | [`worker/middleware.ts`](../worker/middleware.ts) | El middleware de autenticación y de workspace con el que cada producto satélite envuelve sus rutas. |

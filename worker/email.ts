@@ -27,6 +27,16 @@ interface EmailOptions {
 
 /** Lo que el envío necesita de los bindings de un producto, estructuralmente. */
 export interface EmailEnv {
+	/**
+	 * Qué transporte manda el correo (spec § 8 del plan de la plataforma):
+	 * `telnyx` (la Email API, beta por invitación) o `cloudflare` (el REST de
+	 * Email Sending). Sin poner — o pedido telnyx sin TELNYX_API_KEY — se usa
+	 * cloudflare: el fallback hasta tener `email.beta_access`.
+	 */
+	EMAIL_PROVIDER?: string;
+	TELNYX_API_KEY?: string;
+	/** Otro origen para la API de Telnyx. Sólo para desarrollo y pruebas. */
+	TELNYX_API_URL?: string;
 	CF_ACCOUNT_ID?: string;
 	EMAIL_API_TOKEN?: string;
 	EMAIL_FROM?: string;
@@ -39,8 +49,28 @@ interface SendResponse {
 	result?: { delivered?: string[]; permanent_bounces?: string[]; queued?: string[] } | null;
 }
 
+interface TelnyxEmailError {
+	errors?: { code?: unknown; title?: unknown; detail?: unknown }[];
+}
+
+export type EmailProvider = "telnyx" | "cloudflare";
+
+/**
+ * Qué transporte usa este despliegue. `telnyx` sólo cuando se pide por
+ * `EMAIL_PROVIDER` Y hay API key: la Email API de Telnyx es beta por invitación,
+ * y hasta tenerla el valor por defecto — y el fallback de una configuración a
+ * medias — es el REST de Cloudflare Email Sending que ya funciona.
+ */
+export function emailProvider(env: EmailEnv): EmailProvider {
+	if (env.EMAIL_PROVIDER?.trim().toLowerCase() === "telnyx" && env.TELNYX_API_KEY?.trim()) return "telnyx";
+	return "cloudflare";
+}
+
 export function emailConfigured(env: EmailEnv): boolean {
-	return Boolean(env.CF_ACCOUNT_ID && env.EMAIL_API_TOKEN && env.EMAIL_FROM);
+	if (!env.EMAIL_FROM) return false;
+	return emailProvider(env) === "telnyx"
+		? Boolean(env.TELNYX_API_KEY)
+		: Boolean(env.CF_ACCOUNT_ID && env.EMAIL_API_TOKEN);
 }
 
 /**
@@ -126,11 +156,11 @@ export interface NotificationEmailInput {
 
 export interface Emailer {
 	/**
-	 * Envía a través de la API REST de Cloudflare Email Sending. Las Pages
-	 * Functions no pueden usar el binding `send_email` de Workers, así que esto
-	 * llama en su lugar al endpoint de ámbito de cuenta con un token de API.
+	 * Envía por el transporte configurado (`emailProvider`): la Email API de
+	 * Telnyx o el REST de Cloudflare Email Sending (las Pages Functions no pueden
+	 * usar el binding `send_email` de Workers). `fetchImpl` es para las pruebas.
 	 */
-	sendEmail(env: EmailEnv, opts: EmailOptions): Promise<void>;
+	sendEmail(env: EmailEnv, opts: EmailOptions, fetchImpl?: typeof fetch): Promise<void>;
 	/** La única plantilla de notificación con la que se pinta cada correo de producto. */
 	notificationEmail(input: NotificationEmailInput): string;
 }
@@ -355,12 +385,44 @@ export function createEmailer(brand: {
 }): Emailer {
 	const { brandName, productName } = brand;
 
-	async function sendEmail(env: EmailEnv, opts: EmailOptions): Promise<void> {
+	async function sendEmail(env: EmailEnv, opts: EmailOptions, fetchImpl: typeof fetch = globalThis.fetch.bind(globalThis)): Promise<void> {
 		if (!emailConfigured(env)) {
-			throw new Error("Email is not configured (CF_ACCOUNT_ID, EMAIL_API_TOKEN, EMAIL_FROM)");
+			throw new Error("Email is not configured (EMAIL_FROM plus TELNYX_API_KEY or CF_ACCOUNT_ID+EMAIL_API_TOKEN)");
 		}
+		if (emailProvider(env) === "telnyx") return sendViaTelnyx(env, opts, fetchImpl);
+		return sendViaCloudflare(env, opts, fetchImpl);
+	}
 
-		const res = await fetch(
+	/** Telnyx Email API: `POST /v2/email_messages` con Bearer. Beta por invitación; sin ella responde 403 y el error sale entero. */
+	async function sendViaTelnyx(env: EmailEnv, opts: EmailOptions, fetchImpl: typeof fetch): Promise<void> {
+		const apiUrl = (env.TELNYX_API_URL?.trim() || "https://api.telnyx.com").replace(/\/+$/, "");
+		const res = await fetchImpl(`${apiUrl}/v2/email_messages`, {
+			method: "POST",
+			headers: {
+				Authorization: `Bearer ${env.TELNYX_API_KEY}`,
+				"Content-Type": "application/json",
+				// Reintentar un envío no debe poder duplicarlo.
+				"Idempotency-Key": crypto.randomUUID(),
+			},
+			body: JSON.stringify({
+				from: `${env.EMAIL_FROM_NAME ?? brandName} <${env.EMAIL_FROM}>`,
+				to: [opts.to],
+				subject: opts.subject,
+				html_body: opts.html,
+				text_body: opts.text ?? htmlToText(opts.html),
+			}),
+		});
+
+		if (!res.ok) {
+			const body = (await res.json().catch(() => null)) as TelnyxEmailError | null;
+			const first = body?.errors?.[0];
+			const detail = first ? [first.code, first.title, first.detail].filter(Boolean).join(" ") : `HTTP ${res.status}`;
+			throw new Error(`Email delivery failed (${res.status}): ${detail}`);
+		}
+	}
+
+	async function sendViaCloudflare(env: EmailEnv, opts: EmailOptions, fetchImpl: typeof fetch): Promise<void> {
+		const res = await fetchImpl(
 			`https://api.cloudflare.com/client/v4/accounts/${env.CF_ACCOUNT_ID}/email/sending/send`,
 			{
 				method: "POST",

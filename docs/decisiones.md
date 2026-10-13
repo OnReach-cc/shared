@@ -54,6 +54,16 @@ fuera de este archivo): `.sk-orbit-line → .sk-route-line` y el keyframe
 `sk-pulse → sk-breathe`. **La S2/S3, al forkear el control plane, deben alinear
 su copia de `sky.css` con estos dos nombres.**
 
+## v1.1.0 — el transporte de correo conmutable (2026-10-13, sesión S2)
+
+`worker/email.ts` quedó pendiente en la S1 y lo cerró la S2 (spec § 8, D4):
+`sendEmail` elige transporte con `EMAIL_PROVIDER` — `telnyx` (la Email API,
+`POST /v2/email_messages`, beta por invitación `email.beta_access`) o
+`cloudflare` (el REST de Email Sending, el valor por defecto y el fallback de
+una configuración a medias). La interfaz de las plantillas no cambia: cambiar
+de proveedor es cambiar secretos, nunca código de quien llama. El control
+plane lleva la misma pareja de funciones en su `_lib/email.ts`.
+
 ### Decisiones de empaquetado
 
 - **Pin por tag de git** (`github:OnReach-cc/shared#vX.Y.Z`), nunca a master:
