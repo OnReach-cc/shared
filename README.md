@@ -1,0 +1,56 @@
+# @onreach/shared
+
+**El código idéntico en los cinco productos de OnReach y el control plane.** Cada
+uno es su propio repositorio y se despliega por su cuenta; este paquete es lo que
+evita que carguen copias byte a byte del mismo archivo.
+
+Envía **TypeScript crudo**: no hay paso de build. El bundler de la app que lo
+consume lo compila y su `tsc` lo comprueba.
+
+## 📖 La documentación está en [`docs/`](docs/)
+
+**Empieza por [`docs/README.md`](docs/README.md).**
+
+| | |
+|---|---|
+| [modulos.md](docs/modulos.md) | qué hay dentro, y la frontera navegador ↔ worker |
+| [uso.md](docs/uso.md) | consumirlo, publicarlo, y las reglas de qué entra |
+| [pendiente.md](docs/pendiente.md) | lo abierto y las trampas |
+| [decisiones.md](docs/decisiones.md) | el origen del fork y qué se podó |
+
+## ⚠️ Aquí vive el middleware de los cinco productos
+
+`worker/middleware.ts` → `createMiddleware(product)`. El
+`functions/_lib/middleware.ts` de cada producto son diez líneas de
+configuración.
+
+**Antes de arreglar un bug de autenticación en un producto, mira si el arreglo va
+aquí.** Arreglarlo allí es crear la sexta copia del bug.
+
+## ⚠️ El pin es a un TAG, no a master
+
+```json
+"@onreach/shared": "github:OnReach-cc/shared#v1.0.0"
+```
+
+Un commit empujado **sin tag** rompe el CI de todos los consumidores a la vez
+(pasó en la plataforma de origen del fork). Y `npm install` no re-resuelve un
+tag por su cuenta: hay que pedírselo explícitamente.
+
+## Publicar
+
+```bash
+npm run typecheck && npm test
+# sube "version" en package.json, commit
+git tag v1.1.0 && git push --tags
+```
+
+Luego, en cada app que lo quiera: cambia el tag, `npm install`, su typecheck y su
+build. Detalle en [uso.md](docs/uso.md#publicar).
+
+## Mantener los docs al día
+
+```bash
+npm run docs
+npm run docs:check
+```
