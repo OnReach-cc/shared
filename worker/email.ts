@@ -169,7 +169,7 @@ const APP_HUE: Record<string, string> = {
 	surge: "#b02567",
 	letter: "#a16207",
 	canvas: "#7d3996",
-	roster: "#667a16",
+	roster: "#637513",
 };
 
 /**

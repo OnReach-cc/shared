@@ -54,7 +54,7 @@ export const LINE_HEX: Record<ProductId, string> = {
 	surge: "#b02567",
 	letter: "#a16207",
 	canvas: "#7d3996",
-	roster: "#667a16",
+	roster: "#637513",
 };
 
 export function isProductId(id: string): id is ProductId {

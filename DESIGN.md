@@ -19,7 +19,7 @@ colors:
   line-surge: "#b02567"
   line-letter: "#a16207"
   line-canvas: "#7d3996"
-  line-roster: "#667a16"
+  line-roster: "#637513"
   destructive: "#b3261e"
   danger-bg: "#fbeceb"
   danger-fg: "#8f2219"
@@ -129,11 +129,12 @@ solo en su baldosa (`AppTile`) y en las ondas del emisor.
 | Surge | magenta | `#b02567` | la energía de una campaña encendida |
 | Letter | dorado | `#a16207` | la correspondencia, el sello clásico |
 | Canvas | ciruela | `#7d3996` | lo creativo, el cielo tardío |
-| Roster | oliva | `#667a16` | el suelo compartido del que crecen las demás |
+| Roster | oliva | `#637513` | el suelo compartido del que crecen las demás |
 
-Las cinco dan ≥ 4.5:1 sobre el papel (`#faf5ee`) y admiten el rótulo en papel
-(blanco) encima con ≥ 4.8:1. Están separadas en tono entre sí (43°–333°) y de
-la paleta de los otros dos mundos. El orden canónico es
+Las cinco dan ≥ 4.5:1 sobre el papel (`#faf5ee`) — echo 5.0, surge 5.9,
+letter 4.5, canvas 6.7, roster 4.7 — y admiten el rótulo en papel (blanco)
+encima con ≥ 4.9:1. Están separadas en tono entre sí (≈36°–333°) y de la
+paleta de los otros dos mundos. El orden canónico es
 `echo, surge, letter, canvas, roster` (`PRODUCT_IDS` en `lib/lines.ts`; los
 valores hex viven en `LINE_HEX` y en los tokens `--l-*`/`--sk-*`).
 

@@ -1,7 +1,7 @@
 /**
  * Las piezas de página que las cinco apps ya usaban (`PageHeader`, `StatGrid`,
- * `StatTile`, `PanelHeader`, `EmptyState`, `ConsoleTag`), en el mundo «Clear
- * Sky» desde el 2026-10-04 y con la misma API, para que cada pantalla que las
+ * `StatTile`, `PanelHeader`, `EmptyState`, `ConsoleTag`), en el mundo
+ * «Golden Hour» y con la misma API, para que cada pantalla que las
  * monta se mude sin tocarla.
  *
  *   PageHeader   el titular de la página, su frase y su única acción

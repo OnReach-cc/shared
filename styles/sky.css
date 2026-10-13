@@ -41,7 +41,7 @@
 	--sk-surge: #b02567;
 	--sk-letter: #a16207;
 	--sk-canvas: #7d3996;
-	--sk-roster: #667a16;
+	--sk-roster: #637513;
 
 	/* sombras cálidas: siempre con desplazamiento y desenfoque */
 	--sk-shadow-1: 0 1px 2px rgba(84, 48, 16, 0.05), 0 4px 14px -6px rgba(84, 48, 16, 0.1);
@@ -945,7 +945,7 @@
 	--l-surge: #b02567;
 	--l-letter: #a16207;
 	--l-canvas: #7d3996;
-	--l-roster: #667a16;
+	--l-roster: #637513;
 	--font-site: var(--sk-font);
 	--font-cond: var(--sk-font);
 	/* el suelo y los tokens de shadcn que lea un componente compartido */

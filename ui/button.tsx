@@ -1,7 +1,7 @@
 /**
  * El botón. Escribe el vocabulario del billete (`ticket`, ver `styles/site.css`)
- * y el bloque de productos de `styles/product.css` lo pinta en el mundo «Clear
- * Sky» desde el 2026-10-04: una píldora. La API de shadcn se conserva para que
+ * y el bloque de productos de `styles/product.css` lo pinta en el mundo
+ * «Golden Hour»: una píldora. La API de shadcn se conserva para que
  * las cinco apps sigan compilando, y el CSS, que va sin capa, gana a cualquier
  * utilidad que una pantalla vieja ponga en `className`.
  *

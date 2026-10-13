@@ -79,7 +79,7 @@ Módulos de las carpetas publicadas (56), con la primera línea de su comentario
 | [`components/callout.tsx`](../components/callout.tsx) | El aviso (2026-10-06): lo que una pantalla tiene que decir antes de lo demás o al lado de ello — que una acción queda auditada, que nadie más puede ver un proyecto… |
 | [`components/confirm-delete-modal.tsx`](../components/confirm-delete-modal.tsx) | «¿Seguro?» antes de un borrado, igual en los cinco productos. |
 | [`components/console-kit.tsx`](../components/console-kit.tsx) | Las piezas de los paneles, en el mundo «Golden Hour» (2026-10-04). |
-| [`components/console.tsx`](../components/console.tsx) | Las piezas de página que las cinco apps ya usaban (`PageHeader`, `StatGrid`, `StatTile`, `PanelHeader`, `EmptyState`, `ConsoleTag`), en el mundo «Clear Sky» desde el… |
+| [`components/console.tsx`](../components/console.tsx) | Las piezas de página que las cinco apps ya usaban (`PageHeader`, `StatGrid`, `StatTile`, `PanelHeader`, `EmptyState`, `ConsoleTag`), en el mundo «Golden Hour» y con la… |
 | [`components/data-table.tsx`](../components/data-table.tsx) | La tabla de una página (2026-10-06): auditoría, avisos, listas de elementos. |
 | [`components/form-modal.tsx`](../components/form-modal.tsx) | El envoltorio de cualquier formulario en diálogo: título, descripción y hueco. |
 | [`components/map.tsx`](../components/map.tsx) | Las piezas pequeñas del mapa que llevan los cinco productos: la banda de cinco líneas y el cierre de cinco tramos. |
