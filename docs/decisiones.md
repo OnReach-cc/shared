@@ -62,7 +62,9 @@ su copia de `sky.css` con estos dos nombres.**
 `cloudflare` (el REST de Email Sending, el valor por defecto y el fallback de
 una configuración a medias). La interfaz de las plantillas no cambia: cambiar
 de proveedor es cambiar secretos, nunca código de quien llama. El control
-plane lleva la misma pareja de funciones en su `_lib/email.ts`.
+plane lleva la misma pareja de funciones en su `_lib/email.ts`. El remitente va a Telnyx como
+`{ email, name }` y nunca como cadena «Nombre <dirección>»: un nombre con coma
+partiría la cadena en dos buzones.
 
 ### Decisiones de empaquetado
 

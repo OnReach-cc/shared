@@ -47,7 +47,7 @@ test("sendEmail por telnyx: POST /v2/email_messages con Bearer y html_body/text_
 	assert.equal(calls[0].url, "https://api.telnyx.com/v2/email_messages");
 	assert.equal((calls[0].init.headers as Record<string, string>).Authorization, "Bearer KEY_X");
 	const body = JSON.parse(String(calls[0].init.body));
-	assert.equal(body.from, "Echo <notifications@echo.onreach.cc>");
+	assert.deepEqual(body.from, { email: "notifications@echo.onreach.cc", name: "Echo" });
 	assert.deepEqual(body.to, ["ana@example.com"]);
 	assert.equal(body.html_body, "<p>Hola</p>");
 	assert.equal(body.text_body, "Hola");

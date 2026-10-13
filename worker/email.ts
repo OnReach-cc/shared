@@ -405,7 +405,7 @@ export function createEmailer(brand: {
 				"Idempotency-Key": crypto.randomUUID(),
 			},
 			body: JSON.stringify({
-				from: `${env.EMAIL_FROM_NAME ?? brandName} <${env.EMAIL_FROM}>`,
+				from: { email: env.EMAIL_FROM, name: env.EMAIL_FROM_NAME ?? brandName },
 				to: [opts.to],
 				subject: opts.subject,
 				html_body: opts.html,
