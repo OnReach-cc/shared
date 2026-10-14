@@ -42,6 +42,7 @@ sitio.
 | `email` | `createEmailer(brand)` y los helpers de plantilla |
 | `api` | el núcleo de la API con token bearer (`/api/v1` de cada producto) |
 | `access` | `checkWorkspaceAccess`: membresía + derecho vivo en una consulta (la usa `middleware`) |
+| `roster` | la API interna de Roster: firma y verificación por hermano, el cliente tipado y las formas del contrato (v1.2.0) |
 
 ### `createMiddleware` en una frase
 
@@ -72,7 +73,7 @@ archivo nuevo es importable sin tocar `package.json`.
 <!-- BEGIN generated:modules -->
 <!-- No edites aquí: lo reescribe `npm run docs`. -->
 
-Módulos de las carpetas publicadas (57), con la primera línea de su comentario de cabecera.
+Módulos de las carpetas publicadas (59), con la primera línea de su comentario de cabecera.
 
 | Archivo | Qué hace |
 | --- | --- |
@@ -132,6 +133,8 @@ Módulos de las carpetas publicadas (57), con la primera línea de su comentario
 | [`worker/middleware.ts`](../worker/middleware.ts) | El middleware de autenticación y de workspace con el que cada producto satélite envuelve sus rutas. |
 | [`worker/mirror.ts`](../worker/mirror.ts) | El espejo del estado de OnReach — las escrituras que cada producto hace de forma idéntica. |
 | [`worker/response.ts`](../worker/response.ts) | Las tres respuestas JSON que devuelve cualquier handler de Pages Functions. |
+| [`worker/roster.test.ts`](../worker/roster.test.ts) | — |
+| [`worker/roster.ts`](../worker/roster.ts) | La API interna de Roster: el contrato servidor a servidor con el que Echo, Letter, Canvas y Surge leen y escriben contactos sin copiarlos (2026-10-14). |
 | [`worker/sso.ts`](../worker/sso.ts) | Verificación de los tokens de plataforma del control plane de OnReach. |
 
 <!-- END generated:modules -->

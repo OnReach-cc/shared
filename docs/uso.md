@@ -63,6 +63,8 @@ está lista simplemente se queda en el tag anterior.
 | Versión | Qué trajo |
 |---|---|
 | `v1.0.0` | el paquete entero, forkeado del shared del origen @ v1.22.0: la maquinaria de productos (`worker/{sso,middleware,mirror,api,email}`, `product-shell`, `topbar`, `presence/`), el mundo **«Golden Hour»** (tokens cálidos, cinco líneas, el emisor en `components/sky.tsx`) y `lib/lines.ts` con las cinco apps. Sin asistente ni llamadas |
+| `v1.1.0` | el transporte de correo conmutable (`EMAIL_PROVIDER`: `telnyx` o `cloudflare`) en `worker/email` |
+| `v1.2.0` | `worker/roster`: la API interna de Roster, las dos mitades del contrato (firma HMAC por hermano, `verifyRosterRequest`, `createRosterClient` y las formas `RosterContact`, `RosterConsentState`…). La usan Roster (S6) y Echo, Letter, Canvas y Surge (S7–S10). Contrato en prosa: `roster/docs/integraciones.md` |
 
 ## Las reglas de qué entra
 
