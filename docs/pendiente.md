@@ -3,13 +3,12 @@
 > El estado de despliegue **no se deduce del repositorio**. Lo marcado
 > **«confirmar»** viene de las notas de trabajo.
 
-_Última revisión: 2026-10-13 (S1 del plan de OnReach)._
+_Última revisión: 2026-10-15 (corte S11: `OnReach-cc/shared` es público y tiene los tags `v1.0.0`–`v1.3.0`; onreach y las tres consolas fijan `v1.1.0`, Echo, Letter y Canvas `v1.2.0`, Roster y Surge `v1.3.0`)._
 
 ## Abierto
 
 | Qué | Detalle | Confirmar |
 |---|---|---|
-| **Crear el remoto y hacer push** | El usuario crea `OnReach-cc/shared` (**público**, o el CI de todos los consumidores necesitará PAT) y empuja `master` + el tag `v1.0.0`. El tag tiene que llegar al remoto **antes** de que corra el CI del primer consumidor | sí |
 | **El render WebGL del emisor** | `Mark` (SVG) y `.sk-orb` (CSS) existen; si el héroe de onreach.cc quiere un emisor animado con WebGL como el planeta del origen, se construye en la S3 sobre esta geometría | no |
 | **`labelClass` quedó sin variante de tinta** | Las cinco líneas del atardecer son oscuras y el rótulo va siempre en papel; si alguna línea futura fuera clara, reintroducir `map-label--ink` | no |
 
