@@ -249,6 +249,33 @@ export interface RosterSendableMember {
 	consent_since: number;
 }
 
+/**
+ * Un miembro que se puede usar en una audiencia de anuncios (Surge, v1.3.0).
+ *
+ * Subir una lista a una plataforma de anuncios es otro uso de los datos que
+ * mandarle un correo, así que la regla es propia y más estricta que «enviable»
+ * (contrato en `roster/docs/integraciones.md`, § 1.6 «audience»):
+ *
+ * - contacto vivo;
+ * - **ninguna baja vigente en ningún canal**: quien dijo «no» a algo no entra
+ *   en una audiencia por otra puerta;
+ * - cada dirección viaja sólo si su canal tiene `opt_in` vigente y es la
+ *   identidad principal (el email con opt-in de email; el teléfono con opt-in
+ *   de SMS). La otra va a null;
+ * - un contacto sin ninguna dirección que cumpla no aparece.
+ *
+ * Las direcciones van normalizadas (`normalizeIdentity`), en claro: cada
+ * plataforma pide su propio hash y su propia forma (Meta, el teléfono sin `+`),
+ * así que lo hace quien sube, justo antes de subir.
+ */
+export interface RosterAudienceMember {
+	contact_id: string;
+	/** El email principal, sólo con `opt_in` vigente de email. */
+	email: string | null;
+	/** El teléfono principal en E.164, sólo con `opt_in` vigente de SMS. */
+	phone: string | null;
+}
+
 export interface RosterPage<T> {
 	data: T[];
 	/** Pasa esto como `cursor` para la página siguiente; null cuando no hay más. */
@@ -403,6 +430,8 @@ export interface RosterClient {
 	}): Promise<RosterPage<RosterSendableMember>>;
 	/** Recorre todas las páginas de `sendableMembers`. */
 	eachSendableMember(input: { workspace_id: string; segment_id: string; channel: ConsentChannel; pageSize?: number }): AsyncGenerator<RosterSendableMember>;
+	/** Una página de miembros utilizables en una AUDIENCIA de anuncios (regla en `RosterAudienceMember`). */
+	audienceMembers(input: { workspace_id: string; segment_id: string; cursor?: string | null; limit?: number }): Promise<RosterPage<RosterAudienceMember>>;
 }
 
 export function createRosterClient(options: RosterClientOptions): RosterClient {
@@ -475,6 +504,12 @@ export function createRosterClient(options: RosterClientOptions): RosterClient {
 				cursor = page.next_cursor;
 			} while (cursor);
 		},
+		audienceMembers: (input) =>
+			call("GET", `/api/platform/contacts/segments/${encodeURIComponent(input.segment_id)}/audience`, {
+				workspace_id: input.workspace_id,
+				cursor: input.cursor,
+				limit: input.limit,
+			}),
 	};
 	return client;
 }

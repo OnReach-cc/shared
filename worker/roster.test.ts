@@ -107,3 +107,18 @@ test("eachSendableMember: recorre las páginas hasta que no hay cursor", async (
 	assert.deepEqual(ids, ["a", "b", "c"]);
 	assert.deepEqual(cursors, [null, "b"]);
 });
+
+test("audienceMembers: firma la ruta de audiencias con su cursor y Roster la verifica", async () => {
+	const seen: Request[] = [];
+	const fetchImpl = (async (url: unknown, init?: RequestInit) => {
+		seen.push(new Request(String(url), init));
+		return new Response(JSON.stringify({ data: [{ contact_id: "a", email: "ana@example.com", phone: null }], next_cursor: null }), { status: 200 });
+	}) as typeof fetch;
+	const client = createRosterClient({ origin: "https://roster.onreach.cc/", caller: "echo", secret: SECRET, fetch: fetchImpl });
+	const page = await client.audienceMembers({ workspace_id: "w1", segment_id: "all", cursor: "YQ", limit: 500 });
+	assert.deepEqual(page.data[0], { contact_id: "a", email: "ana@example.com", phone: null });
+	const url = new URL(seen[0].url);
+	assert.equal(url.pathname, "/api/platform/contacts/segments/all/audience");
+	assert.equal(url.search, "?workspace_id=w1&cursor=YQ&limit=500");
+	assert.equal(await verifyRosterRequest(seen[0], "", SECRETS), "echo");
+});
