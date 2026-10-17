@@ -66,6 +66,7 @@ está lista simplemente se queda en el tag anterior.
 | `v1.1.0` | el transporte de correo conmutable (`EMAIL_PROVIDER`: `telnyx` o `cloudflare`) en `worker/email` |
 | `v1.2.0` | `worker/roster`: la API interna de Roster, las dos mitades del contrato (firma HMAC por hermano, `verifyRosterRequest`, `createRosterClient` y las formas `RosterContact`, `RosterConsentState`…). La usan Roster (S6) y Echo, Letter, Canvas y Surge (S7–S10). Contrato en prosa: `roster/docs/integraciones.md` |
 | `v1.3.0` | `worker/roster`: la ruta de **audiencias** para anuncios (`audienceMembers`, la forma `RosterAudienceMember`). Regla propia, más estricta que «enviable»: ninguna baja vigente en ningún canal y cada dirección sólo con el opt-in de su canal. La usan Roster y Surge (S10); Echo, Letter y Canvas pueden quedarse en `v1.2.0` |
+| `v1.4.0` | `worker/roster`: **temas de suscripción** (`RosterTopic`, `RosterTopicState`, `topic` en `getConsent`, `recordConsent`, `sendableMembers`; `listTopics`) y las plataformas **externas** `ondesk`/`onforge` como llamantes (`EXTERNAL_ROSTER_CALLERS`, atadas a un workspace) con la ruta `sync` (`RosterSyncInput`). Error nuevo `forbidden`. La usan Roster y Letter |
 
 ## Las reglas de qué entra
 

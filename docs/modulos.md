@@ -42,7 +42,7 @@ sitio.
 | `email` | `createEmailer(brand)` y los helpers de plantilla |
 | `api` | el núcleo de la API con token bearer (`/api/v1` de cada producto) |
 | `access` | `checkWorkspaceAccess`: membresía + derecho vivo en una consulta (la usa `middleware`) |
-| `roster` | la API interna de Roster: firma y verificación por hermano, el cliente tipado y las formas del contrato (v1.2.0; las audiencias de anuncios, v1.3.0) |
+| `roster` | la API interna de Roster: firma y verificación por hermano, el cliente tipado y las formas del contrato (v1.2.0; las audiencias de anuncios, v1.3.0; temas de suscripción y llamantes externos, v1.4.0) |
 
 ### `createMiddleware` en una frase
 

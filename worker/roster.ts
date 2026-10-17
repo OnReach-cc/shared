@@ -18,7 +18,7 @@
  *
  * ── La firma ─────────────────────────────────────────────────────────────────
  *
- *   X-Roster-Caller:    echo | letter | canvas | surge
+ *   X-Roster-Caller:    echo | letter | canvas | surge | ondesk | onforge
  *   X-Roster-Timestamp: segundos unix
  *   X-Roster-Signature: hex(HMAC-SHA256(secreto_del_hermano,
  *                         `${timestamp}\n${MÉTODO}\n${ruta?query}\n${cuerpo}`))
@@ -39,12 +39,26 @@
 
 // ─── Quién puede llamar ──────────────────────────────────────────────────────
 
-/** Los productos que pueden llamar a Roster. Roster no se llama a sí mismo. */
-export const ROSTER_CALLERS = ["echo", "letter", "canvas", "surge"] as const;
+/**
+ * Los productos que pueden llamar a Roster. Roster no se llama a sí mismo.
+ *
+ * `ondesk` y `onforge` (v1.4.0) son plataformas EXTERNAS a la suite: mandan sus
+ * clientes al workspace de OnReach que lleva su marketing. Roster les deja
+ * escribir sólo en el workspace que tiene apuntado para cada una
+ * (`ROSTER_EXTERNAL_WORKSPACES`), aunque la firma sea buena.
+ */
+export const ROSTER_CALLERS = ["echo", "letter", "canvas", "surge", "ondesk", "onforge"] as const;
 export type RosterCaller = (typeof ROSTER_CALLERS)[number];
 
 export function isRosterCaller(value: unknown): value is RosterCaller {
 	return typeof value === "string" && (ROSTER_CALLERS as readonly string[]).includes(value);
+}
+
+/** Los llamantes de fuera de la suite, atados a un único workspace. */
+export const EXTERNAL_ROSTER_CALLERS = ["ondesk", "onforge"] as const;
+
+export function isExternalRosterCaller(caller: RosterCaller): boolean {
+	return (EXTERNAL_ROSTER_CALLERS as readonly string[]).includes(caller);
 }
 
 /** Cuánto puede tener de edad una petición firmada. El mismo margen que los webhooks del control plane. */
@@ -72,6 +86,12 @@ export type ConsentStatus = "opt_in" | "opt_out";
 
 /** «none» = nunca hubo registro. No es enviable: el marketing es opt-in. */
 export type CurrentConsentStatus = ConsentStatus | "none";
+
+/**
+ * La clave de un tema de suscripción (v1.4.0): `releases`, `blog`, `offers`…
+ * Minúsculas, dígitos, guion y guion bajo, empezando por letra o dígito; hasta 32.
+ */
+export const TOPIC_KEY = /^[a-z0-9][a-z0-9_-]{0,31}$/;
 
 export const LIFECYCLE_STAGES = ["subscriber", "lead", "qualified", "opportunity", "customer", "evangelist", "other"] as const;
 export type LifecycleStage = (typeof LIFECYCLE_STAGES)[number];
@@ -155,8 +175,34 @@ export interface RosterContact {
 	attributes: Record<string, unknown>;
 	identities: RosterIdentity[];
 	consents: Record<ConsentChannel, RosterConsentState>;
+	/** El estado de cada tema de suscripción del workspace (vacío si no tiene temas). Sólo correo. */
+	topics: RosterTopicState[];
 	created_at: number;
 	updated_at: number;
+}
+
+/**
+ * Un tema de suscripción (v1.4.0): un permiso de correo propio, separado del
+ * general, para que darse de baja de las ofertas no quite las Releases.
+ */
+export interface RosterTopic {
+	key: string;
+	name: string;
+	description: string | null;
+	archived: boolean;
+}
+
+/**
+ * El estado de un tema para un contacto. `sendable` = opt_in vigente del tema,
+ * SIN una baja general de correo posterior, y con email principal.
+ */
+export interface RosterTopicState {
+	key: string;
+	name: string;
+	status: CurrentConsentStatus;
+	since: number | null;
+	source: string | null;
+	sendable: boolean;
 }
 
 export interface RosterResolveInput {
@@ -195,6 +241,8 @@ export interface RosterConsentInput {
 	occurred_at?: number;
 	/** Obligatoria: un reintento con la misma clave no crea un segundo registro. */
 	idempotency_key: string;
+	/** La clave de un tema (v1.4.0): el consentimiento es de ese tema y no el general. Sólo `email`. */
+	topic?: string;
 }
 
 export interface RosterConsentResult {
@@ -282,10 +330,48 @@ export interface RosterPage<T> {
 	next_cursor: string | null;
 }
 
+/**
+ * Un campo propio que manda una plataforma externa con `sync` (v1.4.0). Roster
+ * lo crea en el workspace si no existe, para que salga en el constructor de
+ * segmentos.
+ */
+export interface RosterSyncField {
+	key: string;
+	label: string;
+	kind: "text" | "number" | "date" | "boolean" | "select";
+	options?: string[];
+	value: string | number | boolean | null;
+}
+
+/** Upsert completo de un contacto desde una plataforma externa (v1.4.0). */
+export interface RosterSyncInput {
+	workspace_id: string;
+	email: string;
+	first_name?: string | null;
+	last_name?: string | null;
+	lifecycle_stage?: LifecycleStage;
+	fields: RosterSyncField[];
+	/** La empresa por una referencia estable de la plataforma (su workspace). null la desliga. */
+	company?: { external_ref: string; name: string } | null;
+	/** Si no existe, ¿se crea? Por defecto sí. Con false sólo se actualiza a quien ya está. */
+	create?: boolean;
+	/** Borrado definitivo (la purga de una cuenta): deja la huella en `erased_identities`. */
+	erase?: boolean;
+}
+
+export interface RosterSyncResult {
+	contact_id: string | null;
+	created: boolean;
+	restored: boolean;
+	erased: boolean;
+	/** Lo que se ignoró: un campo con la misma clave y otro tipo, por ejemplo. */
+	warnings?: string[];
+}
+
 /** El cuerpo de cualquier error de la API interna. */
 export interface RosterErrorBody {
 	error: string;
-	code: "unauthorized" | "invalid_request" | "invalid_identity" | "not_found" | "conflict" | "method_not_allowed" | "server_error";
+	code: "unauthorized" | "forbidden" | "invalid_request" | "invalid_identity" | "not_found" | "conflict" | "method_not_allowed" | "server_error";
 }
 
 // ─── La firma ────────────────────────────────────────────────────────────────
@@ -412,8 +498,14 @@ export interface RosterClient {
 	resolve(input: RosterResolveInput): Promise<RosterResolveResult>;
 	/** Un contacto con sus identidades y su consentimiento vigente. 404 si no existe o está en la papelera. */
 	getContact(workspaceId: string, contactId: string): Promise<RosterContact>;
-	/** El consentimiento vigente de un canal, por contacto o por dirección. */
-	getConsent(input: { workspace_id: string; channel: ConsentChannel; contact_id?: string; address?: string }): Promise<RosterConsentState & { contact_id: string | null }>;
+	/** El consentimiento vigente de un canal (o de un tema, con `topic`), por contacto o por dirección. */
+	getConsent(input: {
+		workspace_id: string;
+		channel: ConsentChannel;
+		contact_id?: string;
+		address?: string;
+		topic?: string;
+	}): Promise<RosterConsentState & { contact_id: string | null; topic?: string | null }>;
 	/** Registra un cambio de consentimiento (baja, STOP, rebote, alta por formulario…). Idempotente por clave. */
 	recordConsent(input: RosterConsentInput): Promise<RosterConsentResult>;
 	/** Registra actividad en la ficha del contacto. Idempotente por (llamador, source_ref). */
@@ -427,9 +519,21 @@ export interface RosterClient {
 		channel: ConsentChannel;
 		cursor?: string | null;
 		limit?: number;
+		/** Con tema, enviable = la regla de `RosterTopicState.sendable`. Sólo `email`. */
+		topic?: string;
 	}): Promise<RosterPage<RosterSendableMember>>;
 	/** Recorre todas las páginas de `sendableMembers`. */
-	eachSendableMember(input: { workspace_id: string; segment_id: string; channel: ConsentChannel; pageSize?: number }): AsyncGenerator<RosterSendableMember>;
+	eachSendableMember(input: {
+		workspace_id: string;
+		segment_id: string;
+		channel: ConsentChannel;
+		pageSize?: number;
+		topic?: string;
+	}): AsyncGenerator<RosterSendableMember>;
+	/** Los temas de suscripción vivos (no archivados) del workspace. */
+	listTopics(workspaceId: string): Promise<RosterTopic[]>;
+	/** Upsert de un contacto desde una plataforma externa (sólo `ondesk` / `onforge`). */
+	sync(input: RosterSyncInput): Promise<RosterSyncResult>;
 	/** Una página de miembros utilizables en una AUDIENCIA de anuncios (regla en `RosterAudienceMember`). */
 	audienceMembers(input: { workspace_id: string; segment_id: string; cursor?: string | null; limit?: number }): Promise<RosterPage<RosterAudienceMember>>;
 }
@@ -478,6 +582,7 @@ export function createRosterClient(options: RosterClientOptions): RosterClient {
 				channel: input.channel,
 				contact_id: input.contact_id,
 				address: input.address,
+				topic: input.topic,
 			}),
 		recordConsent: (input) => call("POST", "/api/platform/contacts/consent", {}, input),
 		recordEvent: (input) => call("POST", "/api/platform/contacts/events", {}, input),
@@ -489,6 +594,7 @@ export function createRosterClient(options: RosterClientOptions): RosterClient {
 				channel: input.channel,
 				cursor: input.cursor,
 				limit: input.limit,
+				topic: input.topic,
 			}),
 		async *eachSendableMember(input) {
 			let cursor: string | null = null;
@@ -499,11 +605,15 @@ export function createRosterClient(options: RosterClientOptions): RosterClient {
 					channel: input.channel,
 					cursor,
 					limit: input.pageSize,
+					topic: input.topic,
 				});
 				yield* page.data;
 				cursor = page.next_cursor;
 			} while (cursor);
 		},
+		listTopics: async (workspaceId) =>
+			(await call<{ data: RosterTopic[] }>("GET", "/api/platform/contacts/topics", { workspace_id: workspaceId })).data,
+		sync: (input) => call("POST", "/api/platform/contacts/sync", {}, input),
 		audienceMembers: (input) =>
 			call("GET", `/api/platform/contacts/segments/${encodeURIComponent(input.segment_id)}/audience`, {
 				workspace_id: input.workspace_id,
