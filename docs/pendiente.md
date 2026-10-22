@@ -3,7 +3,7 @@
 > El estado de despliegue **no se deduce del repositorio**. Lo marcado
 > **«confirmar»** viene de las notas de trabajo.
 
-_Última revisión: 2026-10-15 (corte S11: `OnReach-cc/shared` es público y tiene los tags `v1.0.0`–`v1.3.0`; onreach y las tres consolas fijan `v1.1.0`, Echo, Letter y Canvas `v1.2.0`, Roster y Surge `v1.3.0`)._
+_Última revisión: 2026-10-21 (`OnReach-cc/shared` es público y tiene los tags `v1.0.0`–`v1.4.0`; onreach y las tres consolas fijan `v1.1.0`, Echo y Canvas `v1.2.0`, Surge `v1.3.0`, Roster y Letter `v1.4.0`)._
 
 ## Abierto
 
